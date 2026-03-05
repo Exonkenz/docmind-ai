@@ -35,9 +35,13 @@ export const metadata: Metadata = {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
+      {
+        url: '/icon.svg',
+        sizes: 'any',
+      },
     ],
+    shortcut: '/icon.svg',
   },
-}
 
 export default function RootLayout({
   children,
