@@ -10,23 +10,32 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: 'DocMind AI',
   description: 'Automatically parse technical documentation, extract workflows, and generate diagrams',
-  generator: 'v0.app',
+  openGraph: {
+    title: 'DocMind AI',
+    description: 'Automatically parse technical documentation, extract workflows, and generate diagrams',
+    images: [
+      {
+        url: '/docmind open graph image.png',
+        width: 1200,
+        height: 630,
+        alt: 'DocMind AI - Document Intelligence Platform',
+      }
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DocMind AI',
+    description: 'Automatically parse technical documentation, extract workflows, and generate diagrams',
+    images: ['/docmind open graph image.png'],
+  },
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
       {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
   },
 }
 
