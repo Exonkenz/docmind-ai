@@ -1,117 +1,107 @@
 'use client';
-
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Plus, Upload, GitBranch, AlertCircle, BookOpen } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ReactNode;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/', label: 'Upload', icon: <Upload className="w-4 h-4" /> },
-  { href: '/diagrams', label: 'Diagrams', icon: <GitBranch className="w-4 h-4" /> },
-  { href: '/findings', label: 'Findings', icon: <AlertCircle className="w-4 h-4" /> },
-  { href: '/summary', label: 'Summary', icon: <BookOpen className="w-4 h-4" /> },
+  { href: '/', label: 'Upload' },
+  { href: '/diagrams', label: 'Diagrams' },
+  { href: '/findings', label: 'Findings' },
+  { href: '/summary', label: 'Summary' },
 ];
 
-const PAGE_TITLES: Record<string, { title: string; description: string }> = {
-  '/': {
-    title: 'Upload Document',
-    description: 'No document selected',
-  },
-  '/diagrams': {
-    title: 'Flow Diagrams',
-    description: 'sample-document.pdf',
-  },
-  '/findings': {
-    title: 'Risk Findings',
-    description: 'sample-document.pdf',
-  },
-  '/summary': {
-    title: 'Document Summaries',
-    description: 'sample-document.pdf',
-  },
-};
+const DATA_PAGES = ['/diagrams', '/findings', '/summary'];
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const pageInfo = PAGE_TITLES[pathname] || { title: 'DocMind', description: '' };
+  const [hasDocument, setHasDocument] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('docmind_document_id');
+    setHasDocument(!!stored);
+  }, [pathname]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const NavLinks = () => (
+    <>
+      {NAV_ITEMS.map(item => {
+        const isActive = pathname === item.href;
+        const showDot = hasDocument && DATA_PAGES.includes(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
+              isActive
+                ? 'bg-primary text-primary-foreground font-medium'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}
+          >
+            {item.label}
+            {showDot && (
+              <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+            )}
+          </Link>
+        );
+      })}
+    </>
+  );
 
   return (
-    <div className="flex h-screen bg-background text-foreground flex-col lg:flex-row">
-      {/* Sidebar */}
-      <aside className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r border-sidebar-border bg-sidebar p-6 flex flex-col order-2 lg:order-1">
-        {/* Header */}
-        <div className="mb-10 pb-6 border-b border-sidebar-border">
-          <Link href="/" className="block group">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center">
-                <span className="text-sm font-bold text-sidebar-primary-foreground">D</span>
-              </div>
-              <h1 className="text-xl font-bold text-sidebar-foreground group-hover:text-sidebar-primary transition-colors">DocMind</h1>
-            </div>
-            <p className="text-xs text-muted-foreground">AI Documentation Parser</p>
-          </Link>
+    <div className="flex min-h-screen">
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-56 border-r border-border bg-muted/30 p-4 flex-col gap-1">
+        <div className="mb-6">
+          <h1 className="text-lg font-bold text-foreground">DocMind AI</h1>
+          <p className="text-xs text-muted-foreground">Document Intelligence</p>
         </div>
-
-        {/* Navigation */}
-        <nav className="space-y-1 flex-1">
-          {NAV_ITEMS.map(item => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
-                  isActive
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                    : 'text-sidebar-foreground hover:bg-sidebar-hover/50 hover:text-sidebar-primary'
-                }`}
-              >
-                <span className="flex-shrink-0">{item.icon}</span>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div className="pt-6 border-t border-sidebar-border text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse-subtle" />
-            <p className="text-sidebar-foreground/70">Processing...</p>
-          </div>
-        </div>
+        <NavLinks />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col order-1 lg:order-2 bg-background">
-        {/* Header */}
-        <header className="border-b border-border px-4 sm:px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">{pageInfo.title}</h2>
-            <p className="text-sm text-muted-foreground mt-2">{pageInfo.description}</p>
-          </div>
-          <Button size="sm" className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground whitespace-nowrap">
-            <Plus className="w-4 h-4" />
-            New Document
-          </Button>
-        </header>
-
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto p-6 sm:p-8">
-          <div className="max-w-6xl mx-auto">
-            {children}
-          </div>
+      {/* Mobile header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 border-b border-border bg-background">
+        <div>
+          <h1 className="text-base font-bold text-foreground">DocMind AI</h1>
         </div>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
+
+      {/* Mobile drawer overlay */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <div className={`md:hidden fixed top-0 left-0 bottom-0 z-50 w-64 bg-background border-r border-border p-4 flex flex-col gap-1 transform transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="mb-6 mt-2">
+          <h1 className="text-lg font-bold text-foreground">DocMind AI</h1>
+          <p className="text-xs text-muted-foreground">Document Intelligence</p>
+        </div>
+        <NavLinks />
+      </div>
+
+      {/* Main content */}
+      <main className="flex-1 p-8 md:p-8 pt-16 md:pt-8">
+        {children}
       </main>
     </div>
   );
