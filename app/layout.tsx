@@ -42,6 +42,7 @@ export const metadata: Metadata = {
     ],
     shortcut: '/icon.svg',
   },
+}
 
 export default function RootLayout({
   children,
